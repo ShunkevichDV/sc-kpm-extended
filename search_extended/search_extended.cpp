@@ -7,6 +7,9 @@
 #include "search_extended.hpp"
 
 #include "ASearchPartsOfGivenClasses.hpp"
+#include "searchKeynodes.hpp"
+
+#include <iostream>
 
 using namespace search_extended;
 
@@ -14,6 +17,8 @@ SC_IMPLEMENT_MODULE(searchExtendedModule)
 
 sc_result searchExtendedModule::InitializeImpl()
 {
+    if (!Keynodes::InitGlobal())
+        return SC_RESULT_ERROR;
 
     SC_AGENT_REGISTER(ASearchPartsOfGivenClasses)
 
