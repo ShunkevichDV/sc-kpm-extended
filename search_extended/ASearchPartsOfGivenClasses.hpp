@@ -26,8 +26,12 @@ class ASearchPartsOfGivenClasses : public ScAgent
     SC_PROPERTY(Keynode("question_search_all_part_of_given_classes"), ForceCreate)
     static ScAddr agent_question;
 
+    SC_PROPERTY(Keynode("question_count_all_part_of_given_classes"), ForceCreate)
+    static ScAddr agent_question_count;
+
 private:
-    sc_bool searchPartsRec(ScMemoryContext & ctx, ScAddr const &elem, ScAddr const &class_set, ScAddr const &answer, sc_bool sys_off);
+    int count;
+    sc_bool searchPartsRec(ScMemoryContext & ctx, ScAddr const &elem, ScAddr const &class_set, ScAddr const &answer, sc_bool &sys_off, sc_bool &count_only);
 
 };
 

@@ -19,6 +19,7 @@ namespace search_extended
 
 ScAddr ASearchPartsOfGivenClasses::msAgentKeynode;
 ScAddr ASearchPartsOfGivenClasses::agent_question;
+ScAddr ASearchPartsOfGivenClasses::agent_question_count;
 
 SC_AGENT_IMPLEMENTATION(ASearchPartsOfGivenClasses)
 {
@@ -27,8 +28,16 @@ SC_AGENT_IMPLEMENTATION(ASearchPartsOfGivenClasses)
 
     ScAddr quest = ms_context->GetArcEnd(edgeAddr);
 
+    sc_bool count_only = SC_FALSE;
+    count = 0;
+
     if (!ms_context->HelperCheckArc(agent_question, quest, ScType::EdgeAccessConstPosPerm))
-        return SC_RESULT_ERROR_INVALID_PARAMS;
+    {
+        if (ms_context->HelperCheckArc(agent_question_count, quest, ScType::EdgeAccessConstPosPerm))
+            count_only = SC_TRUE;
+        else
+            return SC_RESULT_ERROR_INVALID_PARAMS;
+    }
 
     ScAddr elem_set, class_set;
 
@@ -47,15 +56,28 @@ SC_AGENT_IMPLEMENTATION(ASearchPartsOfGivenClasses)
     ScAddr answer = ms_context->CreateNode(ScType::NodeConst);
     ms_context->CreateArc(ScType::EdgeAccessConstPosPerm, Keynodes::system_element, answer);
 
+    sc_bool sys_off = SC_TRUE;
     ScIterator3Ptr elem_iter = ms_context->Iterator3(elem_set, ScType::EdgeAccessConstPosPerm, ScType::NodeConst);
     while (elem_iter->Next())
     {
-        sc_bool sys_off = SC_TRUE;
         if (IS_SYSTEM_ELEMENT(((ScMemoryContext&)ms_context), elem_iter->Get(2)))
             sys_off = SC_FALSE;
+        if (SC_FALSE == count_only)
+        {
+            Utils::addToAnswer((ScMemoryContext&)ms_context, answer, elem_iter->Get(2), sys_off, SC_TRUE);
+        }
+        searchPartsRec((ScMemoryContext&)ms_context, elem_iter->Get(2), class_set, answer, sys_off, count_only);
+    }
 
-        Utils::addToAnswer((ScMemoryContext&)ms_context, answer, elem_iter->Get(2), sys_off, SC_TRUE);
-        searchPartsRec((ScMemoryContext&)ms_context, elem_iter->Get(2), class_set, answer, sys_off);
+    if (count_only)
+    {
+        ScAddr count_link = ms_context->CreateLink();
+        std::stringstream ss;
+        ss << count;
+        std::string str = ss.str();
+        ScStream write_stream((sc_char*)str.c_str(), str.length(), SC_STREAM_FLAG_READ);
+        ms_context->SetLinkContent(count_link, write_stream);
+        Utils::addToAnswer((ScMemoryContext&)ms_context, answer, count_link, sys_off, SC_TRUE);
     }
 
     Utils::finishSearchAction((ScMemoryContext&)ms_context, quest, answer);
@@ -64,7 +86,7 @@ SC_AGENT_IMPLEMENTATION(ASearchPartsOfGivenClasses)
 }
 
 
-sc_bool ASearchPartsOfGivenClasses::searchPartsRec(ScMemoryContext & ctx, ScAddr const &elem, ScAddr const &class_set, ScAddr const &answer, sc_bool sys_off)
+sc_bool ASearchPartsOfGivenClasses::searchPartsRec(ScMemoryContext & ctx, ScAddr const &elem, ScAddr const &class_set, ScAddr const &answer, sc_bool &sys_off, sc_bool &count_only)
 {
     sc_bool result = SC_FALSE;
 
@@ -74,9 +96,14 @@ sc_bool ASearchPartsOfGivenClasses::searchPartsRec(ScMemoryContext & ctx, ScAddr
         if (!ctx.HelperCheckArc(Keynodes::taxonomy_relation, iter->Get(4), ScType::EdgeAccessConstPosPerm))
             continue;
 
-        sc_bool curr_result = searchPartsRec(ctx, iter->Get(2), class_set, answer, sys_off);
-
-        if (Utils::isElementOfUnion(ctx, iter->Get(2), class_set) || SC_TRUE == curr_result)
+        sc_bool curr_result = searchPartsRec(ctx, iter->Get(2), class_set, answer, sys_off, count_only);
+        sc_bool found = Utils::isElementOfUnion(ctx, iter->Get(2), class_set);
+        if (SC_TRUE == found && SC_TRUE == count_only)
+        {
+            count++;
+            continue;
+        }
+        if (found || SC_TRUE == curr_result)
         {
             result = SC_TRUE;
             Utils::addToAnswer(ctx, answer, iter->Get(1), sys_off, SC_FALSE);
@@ -99,9 +126,14 @@ sc_bool ASearchPartsOfGivenClasses::searchPartsRec(ScMemoryContext & ctx, ScAddr
         ScIterator3Ptr iter3 = ctx.Iterator3(iter5->Get(0), ScType::EdgeAccessConstPosPerm, ScType::NodeConst);
         while (iter3->Next())
         {
-            sc_bool curr_result = searchPartsRec(ctx, iter3->Get(2), class_set, answer, sys_off);
-
-            if (Utils::isElementOfUnion(ctx, iter3->Get(2), class_set) || SC_TRUE == curr_result)
+            sc_bool curr_result = searchPartsRec(ctx, iter3->Get(2), class_set, answer, sys_off, count_only);
+            sc_bool found = Utils::isElementOfUnion(ctx, iter3->Get(2), class_set);
+            if (SC_TRUE == found && SC_TRUE == count_only)
+            {
+                count++;
+                continue;
+            }
+            if (found || SC_TRUE == curr_result)
             {
                 result = SC_TRUE;
                 flag = SC_TRUE;
@@ -110,7 +142,7 @@ sc_bool ASearchPartsOfGivenClasses::searchPartsRec(ScMemoryContext & ctx, ScAddr
             }
         }
 
-        if (SC_FALSE == flag)
+        if (SC_FALSE == flag || SC_TRUE == count_only)
             continue;
 
         Utils::addToAnswer(ctx, answer, iter5->Get(0), sys_off, SC_FALSE);
