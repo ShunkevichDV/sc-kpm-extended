@@ -7,6 +7,7 @@
 #pragma once
 
 #include "sc-memory/cpp/kpm/sc_agent.hpp"
+#include "sc-memory/cpp/sc_memory.hpp"
 #include "searchKeynodes.hpp"
 
 #include "ASearchPartsOfGivenClasses.generated.hpp"
@@ -24,6 +25,9 @@ class ASearchPartsOfGivenClasses : public ScAgent
 
     SC_PROPERTY(Keynode("question_search_all_part_of_given_classes"), ForceCreate)
     static ScAddr agent_question;
+
+private:
+    sc_bool searchPartsRec(ScMemoryContext & ctx, ScAddr const &elem, ScAddr const &class_set, ScAddr const &answer, sc_bool sys_off);
 
 };
 
