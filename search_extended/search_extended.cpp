@@ -7,6 +7,7 @@
 #include "search_extended.hpp"
 
 #include "ASearchPartsOfGivenClasses.hpp"
+#include "ASearchPartsByRelations.hpp"
 #include "searchKeynodes.hpp"
 
 #include <iostream>
@@ -21,6 +22,7 @@ sc_result searchExtendedModule::InitializeImpl()
         return SC_RESULT_ERROR;
 
     SC_AGENT_REGISTER(ASearchPartsOfGivenClasses)
+    SC_AGENT_REGISTER(ASearchPartsByRelations)
 
     return SC_RESULT_OK;
 }
@@ -28,6 +30,7 @@ sc_result searchExtendedModule::InitializeImpl()
 sc_result searchExtendedModule::ShutdownImpl()
 {
     SC_AGENT_UNREGISTER(ASearchPartsOfGivenClasses)
+    SC_AGENT_UNREGISTER(ASearchPartsByRelations)
 
     sc_result result = SC_RESULT_OK;
     return result;

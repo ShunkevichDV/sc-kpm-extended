@@ -67,6 +67,18 @@ sc_bool Utils::isSubset(ScMemoryContext & ctx, ScAddr const &parent_set, ScAddr 
     return SC_FALSE;
 }
 
+sc_bool Utils::isSubsetOfAny(ScMemoryContext & ctx, ScAddr const &parents_set, ScAddr const &child_set)
+{
+    ScIterator3Ptr iter3 = ctx.Iterator3(parents_set, ScType::EdgeAccessConstPosPerm, ScType::NodeConst);
+    while (iter3->Next())
+    {
+        if (isSubset(ctx, iter3->Get(2), child_set))
+            return SC_TRUE;
+    }
+
+    return SC_FALSE;
+}
+
 void Utils::finishSearchAction(ScMemoryContext & ctx, ScAddr const &action, ScAddr const &answer)
 {
     ScAddr arc = ctx.CreateArc(ScType::EdgeDCommonConst, action, answer);

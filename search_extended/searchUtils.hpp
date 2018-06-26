@@ -24,6 +24,7 @@ class Utils : public ScObject
 public:
 
     static sc_bool isSubset(ScMemoryContext & ctx, ScAddr const &parent_set, ScAddr const &child_set);
+    static sc_bool isSubsetOfAny(ScMemoryContext & ctx, ScAddr const &parents_set, ScAddr const &child_set);
     static sc_bool isElementOfUnion(ScMemoryContext & ctx, ScAddr const &elem, ScAddr const &class_set);
     static void addToAnswer(ScMemoryContext & ctx, ScAddr const &answer, ScAddr const &elem, sc_bool sys_off, sc_bool key_element);
     static void finishSearchAction(ScMemoryContext & ctx, ScAddr const &action, ScAddr const &answer);
