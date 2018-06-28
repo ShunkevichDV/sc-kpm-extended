@@ -33,6 +33,12 @@ sc_bool Utils::isElementOfUnion(ScMemoryContext & ctx, ScAddr const &elem, ScAdd
     ScIterator3Ptr iter = ctx.Iterator3(class_set, ScType::EdgeAccessConstPosPerm, ScType::NodeConst);
     while (iter->Next())
     {
+        /*ScIterator3Ptr iter3 = ctx.Iterator3(ScType::NodeConst, ScType::EdgeAccessConstPosPerm, elem);
+        while (iter3->Next())
+        {
+            if (SC_TRUE == isSubset(ctx, iter->Get(2), iter3->Get(0)))
+                return SC_TRUE;
+        }*/
         if (ctx.HelperCheckArc(iter->Get(2), elem, ScType::EdgeAccessConstPosPerm))
             return SC_TRUE;
     }
@@ -47,7 +53,7 @@ sc_bool Utils::isSubset(ScMemoryContext & ctx, ScAddr const &parent_set, ScAddr 
     ScIterator5Ptr iter = ctx.Iterator5(ScType::NodeConst, ScType::EdgeDCommonConst, child_set, ScType::EdgeAccessConstPosPerm, Keynodes::nrel_inclusion);
     while (iter->Next())
     {
-        sc_bool result = isSubset(ctx, iter->Get(0), child_set);
+        sc_bool result = isSubset(ctx, parent_set, iter->Get(0));
         if (SC_TRUE == result)
             return SC_TRUE;
     }
@@ -58,7 +64,7 @@ sc_bool Utils::isSubset(ScMemoryContext & ctx, ScAddr const &parent_set, ScAddr 
         ScIterator5Ptr iter5 = ctx.Iterator5(iter3->Get(0), ScType::EdgeDCommonConst, ScType::NodeConst, ScType::EdgeAccessConstPosPerm, Keynodes::nrel_subdividing);
         if (iter5->Next())
         {
-            sc_bool result = isSubset(ctx, iter5->Get(2), child_set);
+            sc_bool result = isSubset(ctx, parent_set, iter5->Get(2));
             if (SC_TRUE == result)
                 return SC_TRUE;
         }
