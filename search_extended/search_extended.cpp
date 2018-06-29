@@ -10,6 +10,7 @@
 #include "ASearchPartsByRelations.hpp"
 #include "ASearchElementsConnectedWithRelation.hpp"
 #include "ASearchOutsidePart.hpp"
+#include "ASearchPartsContainingPartWithCharacteristic.hpp"
 #include "searchKeynodes.hpp"
 
 #include <iostream>
@@ -27,6 +28,7 @@ sc_result searchExtendedModule::InitializeImpl()
     SC_AGENT_REGISTER(ASearchPartsByRelations)
     SC_AGENT_REGISTER(ASearchElementsConnectedWithRelation)
     SC_AGENT_REGISTER(ASearchOutsidePart)
+    SC_AGENT_REGISTER(ASearchPartsContainingPartWithCharacteristic)
 
 
     return SC_RESULT_OK;
@@ -38,6 +40,7 @@ sc_result searchExtendedModule::ShutdownImpl()
     SC_AGENT_UNREGISTER(ASearchPartsByRelations)
     SC_AGENT_UNREGISTER(ASearchElementsConnectedWithRelation)
     SC_AGENT_UNREGISTER(ASearchOutsidePart)
+    SC_AGENT_UNREGISTER(ASearchPartsContainingPartWithCharacteristic)
 
     sc_result result = SC_RESULT_OK;
     return result;
