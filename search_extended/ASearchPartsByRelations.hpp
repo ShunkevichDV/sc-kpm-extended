@@ -31,7 +31,7 @@ class ASearchPartsByRelations : public ScAgent
 
 private:
     int count;
-    sc_bool searchByRelationsRec(ScMemoryContext & ctx, ScAddr const &elem, ScAddr const &class_set, ScAddr const &answer, sc_bool &sys_off, sc_bool &count_only);
+    sc_bool searchByRelationsRec(ScMemoryContext & ctx, ScAddr const &elem, ScAddr const &relation_set, ScAddr const &class_set, ScAddr const &answer, sc_bool &sys_off, sc_bool &count_only);
 
 };
 

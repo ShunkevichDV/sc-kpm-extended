@@ -39,7 +39,7 @@ SC_AGENT_IMPLEMENTATION(ASearchPartsByRelations)
             return SC_RESULT_ERROR_INVALID_PARAMS;
     }
 
-    ScAddr elem_set, relation_set;
+    ScAddr elem_set, relation_set, class_set;
 
     ScIterator5Ptr iter = ms_context->Iterator5(quest, ScType::EdgeAccessConstPosPerm, ScType::NodeConst, ScType::EdgeAccessConstPosPerm, Keynodes::rrel_1);
     if (iter->Next())
@@ -52,6 +52,10 @@ SC_AGENT_IMPLEMENTATION(ASearchPartsByRelations)
         relation_set = iter->Get(2);
     else
         return SC_RESULT_ERROR_INVALID_PARAMS;
+
+    iter = ms_context->Iterator5(quest, ScType::EdgeAccessConstPosPerm, ScType::NodeConst, ScType::EdgeAccessConstPosPerm, Keynodes::rrel_3);
+    if (iter->Next())
+        class_set = iter->Get(2);
 
     ScAddr answer = ms_context->CreateNode(ScType::NodeConst);
     ms_context->CreateArc(ScType::EdgeAccessConstPosPerm, Keynodes::system_element, answer);
@@ -66,7 +70,7 @@ SC_AGENT_IMPLEMENTATION(ASearchPartsByRelations)
         {
             Utils::addToAnswer((ScMemoryContext&)ms_context, answer, elem_iter->Get(2), sys_off, SC_TRUE);
         }
-        searchByRelationsRec((ScMemoryContext&)ms_context, elem_iter->Get(2), relation_set, answer, sys_off, count_only);
+        searchByRelationsRec((ScMemoryContext&)ms_context, elem_iter->Get(2), relation_set, class_set, answer, sys_off, count_only);
     }
 
     if (count_only)
@@ -86,7 +90,7 @@ SC_AGENT_IMPLEMENTATION(ASearchPartsByRelations)
 }
 
 
-sc_bool ASearchPartsByRelations::searchByRelationsRec(ScMemoryContext & ctx, ScAddr const &elem, ScAddr const &class_set, ScAddr const &answer, sc_bool &sys_off, sc_bool &count_only)
+sc_bool ASearchPartsByRelations::searchByRelationsRec(ScMemoryContext & ctx, ScAddr const &elem, ScAddr const &relation_set, ScAddr const &class_set, ScAddr const &answer, sc_bool &sys_off, sc_bool &count_only)
 {
     sc_bool result = SC_FALSE;
 
@@ -96,8 +100,11 @@ sc_bool ASearchPartsByRelations::searchByRelationsRec(ScMemoryContext & ctx, ScA
         if (!ctx.HelperCheckArc(Keynodes::taxonomy_relation, iter->Get(4), ScType::EdgeAccessConstPosPerm))
             continue;
 
-        sc_bool curr_result = searchByRelationsRec(ctx, iter->Get(2), class_set, answer, sys_off, count_only);
-        sc_bool found = Utils::isSubsetOfAny(ctx, class_set, iter->Get(4));
+        sc_bool curr_result = searchByRelationsRec(ctx, iter->Get(2), relation_set, class_set, answer, sys_off, count_only);
+        sc_bool found = Utils::isSubsetOfAny(ctx, relation_set, iter->Get(4));
+        if (SC_TRUE == found && class_set.IsValid())
+            found = Utils::isElementOfUnion(ctx, iter->Get(2), class_set);
+
         if (SC_TRUE == found && SC_TRUE == count_only)
         {
             count++;
@@ -122,13 +129,15 @@ sc_bool ASearchPartsByRelations::searchByRelationsRec(ScMemoryContext & ctx, ScA
         if (!(ctx.HelperCheckArc(Keynodes::taxonomy_relation, iter5->Get(4), ScType::EdgeAccessConstPosPerm) || ctx.HelperCheckArc(Keynodes::decomposition_relation, iter->Get(4), ScType::EdgeAccessConstPosPerm)))
             continue;
 
-        sc_bool found = Utils::isSubsetOfAny(ctx, class_set, iter5->Get(4));
+        sc_bool found = Utils::isSubsetOfAny(ctx, relation_set, iter5->Get(4));
 
         sc_bool flag = SC_FALSE;
         ScIterator3Ptr iter3 = ctx.Iterator3(iter5->Get(0), ScType::EdgeAccessConstPosPerm, ScType::NodeConst);
         while (iter3->Next())
         {
-            sc_bool curr_result = searchByRelationsRec(ctx, iter3->Get(2), class_set, answer, sys_off, count_only);
+            sc_bool curr_result = searchByRelationsRec(ctx, iter3->Get(2), relation_set, class_set, answer, sys_off, count_only);
+            if (SC_TRUE == found && class_set.IsValid())
+                found = Utils::isElementOfUnion(ctx, iter3->Get(2), class_set);
 
             if (SC_TRUE == found && SC_TRUE == count_only)
             {

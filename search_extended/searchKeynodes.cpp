@@ -21,5 +21,6 @@ ScAddr Keynodes::decomposition_relation;
 ScAddr Keynodes::quasybinary_relation;
 ScAddr Keynodes::rrel_1;
 ScAddr Keynodes::rrel_2;
+ScAddr Keynodes::rrel_3;
 
 }

@@ -56,6 +56,9 @@ public:
 
     SC_PROPERTY(Keynode("rrel_2"), ForceCreate)
     static ScAddr rrel_2;
+
+    SC_PROPERTY(Keynode("rrel_3"), ForceCreate)
+    static ScAddr rrel_3;
 };
 
 } //namespace
