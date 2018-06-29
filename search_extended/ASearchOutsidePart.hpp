@@ -31,4 +31,4 @@ class ASearchOutsidePart : public ScAgent
 
 };
 
-} // namespace bottle
+} // namespace

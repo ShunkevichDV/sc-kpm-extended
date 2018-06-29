@@ -28,4 +28,4 @@ class ASearchElementsConnectedWithRelation : public ScAgent
 
 };
 
-} // namespace bottle
+} // namespace
